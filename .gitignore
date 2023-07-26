@@ -1,3 +1,10 @@
+# Self-defined
+datasets/processed/
+datasets/raw/
+.vscode/
+logs/
+results/*.pth
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
