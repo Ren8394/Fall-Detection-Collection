@@ -156,9 +156,9 @@ class Trainer:
         sns.heatmap(cm, annot=True, fmt='d', cmap='Blues')
         plt.title(f'Bal. Acc: {bal_acc:.4f}')
         if self.output_path.joinpath('images', 'confusion_matrix.png').exists():
-            plt.savefig(self.output_path.joinpath('images', f"confusion_matrix_{int(time.localtime())}.png"))
+            plt.savefig(self.output_path.joinpath('images', f"{self.config['model']['name']}_{self.config['data']['name']}_confusion_matrix_{int(time.localtime())}.png"))
         else:
-            plt.savefig(self.output_path.joinpath('images', f"confusion_matrix.png"))
+            plt.savefig(self.output_path.joinpath('images', f"{self.config['model']['name']}_{self.config['data']['name']}_confusion_matrix.png"))
         plt.show()
         plt.close()
     
