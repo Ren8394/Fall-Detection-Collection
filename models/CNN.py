@@ -1,10 +1,10 @@
 import torch.nn as nn
 import torch.nn.functional as F
 
-# CNN_1 structure refer to FallAllD paper
-class CNN_1(nn.Module):
+# CNN_01 structure refer to FallAllD paper
+class CNN_01(nn.Module):
     def __init__(self):
-        super(CNN_1, self).__init__()
+        super(CNN_01, self).__init__()
         self.convBlock1 = nn.Sequential(
             nn.Conv2d(1, 16, kernel_size=(3, 3), stride=1, padding=0, bias=False),
             nn.ReLU(),
@@ -30,5 +30,5 @@ class CNN_1(nn.Module):
 if __name__ == '__main__':
     from torchsummary import summary
     
-    model = CNN_1()
+    model = CNN_01()
     summary(model, (1, 260, 3))
