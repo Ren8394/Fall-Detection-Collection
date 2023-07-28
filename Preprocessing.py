@@ -4,7 +4,7 @@ import pandas as pd
 from pathlib import Path
 
 
-def preprocessing_FallAllD(loadfile_path, savefile_path, sensor, location, sampling_rate):
+def preprocessing_FallAllD(loadfile_path, savefile_path, sensor, location, sampling_rate, duration):
     # read data
     # columns = ['SubjectID', 'Device', 'Activity', 'Acc', 'Gyr']
     df = pd.read_pickle(loadfile_path)
@@ -31,7 +31,7 @@ def preprocessing_FallAllD(loadfile_path, savefile_path, sensor, location, sampl
 
     # resampling
     df['Acc'] = df['Acc'].apply(lambda x: x[sorted(
-        [len(x)-sampling_rate*(i+1) for i in range(13 * sampling_rate)]), :])
+        [len(x)-sampling_rate*(i+1) for i in range(duration * sampling_rate)]), :])
 
     # one-hot encoding
     df['Activity'] = df['Activity'].apply(

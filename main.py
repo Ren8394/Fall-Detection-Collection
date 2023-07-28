@@ -43,7 +43,8 @@ if __name__ == '__main__':
         location=config['data']['location'].split(','),
         sampling_rate=int(config['data']['sampling_rate']),
         savefile_path=Path.cwd().joinpath('datasets', 'processed',
-                                          f"{config['data']['name']}-Processed.pkl")
+                                          f"{config['data']['name']}-Processed.pkl"),
+        duration=int(config['data']['duration'])
     )
 
     # load model
@@ -54,15 +55,15 @@ if __name__ == '__main__':
         config, model)
 
     # tensorboard
-    writer = SummaryWriter(f"./logs/" \
-                           f"{config['model']['name']}_{config['data']['name']}_{config['model']['loss_fuction']}" \
+    writer = SummaryWriter(f"./logs/"
+                           f"{config['model']['name']}_{config['data']['name']}_{config['model']['loss_fuction']}"
                            f"_epochs{config['hyperparameters']['epochs']}_batch{config['hyperparameters']['batch_size']}_lr{config['hyperparameters']['learning_rate']}")
 
-    data_loader = load_data(config, data_path=Path.cwd().joinpath('datasets', 'processed', f"{config['data']['name']}-Processed.pkl"))
+    data_loader = load_data(config, data_path=Path.cwd().joinpath(
+        'datasets', 'processed', f"{config['data']['name']}-Processed.pkl"))
 
-    Trainer = Trainer(model, int(config['hyperparameters']['epochs']), epoch, best_loss, optimizer, criterion, device, 
-                      data_loader, writer, Path.cwd().joinpath('results'), True,config)
-    
+    Trainer = Trainer(model, int(config['hyperparameters']['epochs']), epoch, best_loss, optimizer, criterion, device,
+                      data_loader, writer, Path.cwd().joinpath('results'), True, config)
 
     try:
         if config['model']['status'] == 'train':
@@ -74,13 +75,14 @@ if __name__ == '__main__':
             'model': model.state_dict(),
             'optimizer': optimizer.state_dict(),
             'best_loss': best_loss
-            }
+        }
         filename = f"{config['model']['name']}_{config['data']['name']}" \
             f"_{config['model']['loss_fuction']}" \
             f"_epochs{config['hyperparameters']['epochs']}" \
             f"_batch{config['hyperparameters']['batch_size']}" \
             f"_lr{config['hyperparameters']['learning_rate']}"
-        checkpoint_path = Path.cwd().joinpath('results').joinpath(f"{filename}.pth")
+        checkpoint_path = Path.cwd().joinpath(
+            'results').joinpath(f"{filename}.pth")
         torch.save(state_dict, checkpoint_path)
         print('Saved interrupt')
         try:
