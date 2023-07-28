@@ -138,7 +138,7 @@ class Trainer:
         y_true = []
         y_pred = []
         with torch.no_grad():
-            for _, (x, y) in enumerate(self.loader['val']):
+            for _, (x, y) in enumerate(self.loader['test']):
                 x = x.to(device)
                 y = y.to(device)
 
@@ -156,7 +156,7 @@ class Trainer:
         sns.heatmap(cm, annot=True, fmt='d', cmap='Blues')
         plt.title(f'Bal. Acc: {bal_acc:.4f}')
         if self.output_path.joinpath('images', 'confusion_matrix.png').exists():
-            plt.savefig(self.output_path.joinpath('images', f"confusion_matrix_{int(time.time())}.png"))
+            plt.savefig(self.output_path.joinpath('images', f"confusion_matrix_{int(time.localtime())}.png"))
         else:
             plt.savefig(self.output_path.joinpath('images', f"confusion_matrix.png"))
         plt.show()
