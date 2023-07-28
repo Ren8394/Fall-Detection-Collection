@@ -45,16 +45,20 @@ def load_data(config, data_path):
     # read data and split train/val
     data_df = pd.read_pickle(data_path)
     train_df, val_df = train_test_split(data_df, test_size=0.2)
+    val_df, test_df = train_test_split(val_df, test_size=0.5)
     train_df.reset_index(drop=True, inplace=True)
     val_df.reset_index(drop=True, inplace=True)
+    test_df.reset_index(drop=True, inplace=True)
 
     # create dataset
     train_dataset = CustomDataset(train_df)
     val_dataset = CustomDataset(val_df)
+    test_dataset = CustomDataset(test_df)
 
     data_loader = { 
         'train':DataLoader(train_dataset, batch_size=int(config['hyperparameters']['batch_size']), shuffle=True, num_workers=4, pin_memory=False),
-        'val'  :DataLoader(val_dataset, batch_size=int(config['hyperparameters']['batch_size']), num_workers=4, pin_memory=False)
+        'val'  :DataLoader(val_dataset, batch_size=int(config['hyperparameters']['batch_size']), num_workers=4, pin_memory=False),
+        'test' :DataLoader(test_dataset, batch_size=int(config['hyperparameters']['batch_size']), num_workers=4, pin_memory=False)
     }
 
     return data_loader
