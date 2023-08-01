@@ -7,13 +7,14 @@ class LSTM_01(nn.Module):
         super(LSTM_01, self).__init__()
         self.lstmBlock1 = nn.LSTM(input_size=3, hidden_size=32, num_layers=1, batch_first=True)
         self.lstmBlock2 = nn.LSTM(input_size=32, hidden_size=64, num_layers=1, batch_first=True)
-        self.fc1 = nn.Linear(64 * 127, 2)
+        self.fc1 = nn.Linear(64, 2)
 
     def forward(self, x):
-        pass
+        
+        x = x.squeeze(1)
         out, _ = self.lstmBlock1(x)
         out, _ = self.lstmBlock2(out)
-        out = out.view(out.size(0), -1)
+        out = out[:, -1, :]
         out = self.fc1(out)
 
         return out
