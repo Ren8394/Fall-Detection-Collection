@@ -1,4 +1,4 @@
-import configparser
+import configparser, argparse
 import os
 import pandas as pd
 import random
@@ -18,6 +18,31 @@ random.seed(SEED)
 torch.manual_seed(SEED)
 cudnn.deterministic = True
 
+def get_args():
+    parser = argparse.ArgumentParser()
+    # data
+    parser.add_argument('--dataset', type=str, default='SisFall')
+    parser.add_argument('--sensor', type=str, nargs='+', default=['Acc'])
+    parser.add_argument('--location', type=str, nargs='+', default=['Waist'])
+    parser.add_argument('--duration', type=int, default=13)
+    parser.add_argument('--sampling_rate', type=int, default=20)
+    # model
+    parser.add_argument('--model', type=str, default='LSTM')
+    parser.add_argument('--version', type=str, default='01')
+    parser.add_argument('--loss_function', type=str, default='ce')
+    parser.add_argument('--optimizer', type=str, default='adam')
+    parser.add_argument('--status', type=str, default='train')
+    # hyperparameters
+    parser.add_argument('--epochs', type=int, default=100)
+    parser.add_argument('--batch_size', type=int, default=8)  
+    parser.add_argument('--lr', type=float, default=0.001)
+    # etc
+    parser.add_argument('--gpu', type=str, default='0')
+    parser.add_argument('--save_results', type=str, default='False')
+
+    args = parser.parse_args()
+    return args
+
 # main
 if __name__ == '__main__':
     # get current path
@@ -25,48 +50,46 @@ if __name__ == '__main__':
     print('* random seed =', SEED)
 
     # get parameter
-    # read config
-    config = configparser.ConfigParser()
-    config.read('config.ini')
+    args = get_args()
 
-    print('* model name =', config['model']['name'])
-    print('* status =', config['model']['status'])
-    print('* learning rate =', config['hyperparameters']['learning_rate'])
+    print('* model name =', args.model)
+    print('* status =', args.status)
+    print('* learning rate =', args.lr)
 
     # data path
     exec(
-        f"from Preprocessing import preprocessing_{config['data']['name']} as preprocess")
+        f"from Preprocessing import preprocessing_{args.dataset} as preprocess")
     preprocess(
         loadfile_path=Path.cwd().joinpath('datasets', 'processed',
-                                          f"{config['data']['name']}-Preliminary.pkl"),
-        sensor=config['data']['sensor'].split(','),
-        location=config['data']['location'].split(','),
-        sampling_rate=int(config['data']['sampling_rate']),
+                                          f"{args.dataset}-Preliminary.pkl"),
         savefile_path=Path.cwd().joinpath('datasets', 'processed',
-                                          f"{config['data']['name']}-Processed.pkl"),
-        duration=int(config['data']['duration'])
+                                          f"{args.dataset}-Processed.pkl"),
+        sensor=args.sensor,
+        location=args.location,
+        sampling_rate=args.sampling_rate,
+        duration=args.duration
     )
 
     # load model
     exec(
-        f"from models.{config['model']['name'].split('_')[0]} import {config['model']['name']} as model")
+        f"from models.{args.model} import {args.model}_{args.version} as model")
     model = model()
     model, epoch, best_loss, optimizer, criterion, device = load_model(
-        config, model)
+        args, model)
 
     # tensorboard
     writer = SummaryWriter(f"./logs/"
-                           f"{config['model']['name']}_{config['data']['name']}_{config['model']['loss_fuction']}"
-                           f"_epochs{config['hyperparameters']['epochs']}_batch{config['hyperparameters']['batch_size']}_lr{config['hyperparameters']['learning_rate']}")
+                           f"{args.model}_{args.dataset}_{args.loss_function}"
+                           f"_epochs{args.epochs}_batch{args.batch_size}_lr{args.lr}")
 
-    data_loader = load_data(config, data_path=Path.cwd().joinpath(
-        'datasets', 'processed', f"{config['data']['name']}-Processed.pkl"))
+    data_loader = load_data(args, data_path=Path.cwd().joinpath(
+        'datasets', 'processed', f"{args.dataset}-Processed.pkl"))
 
-    Trainer = Trainer(model, int(config['hyperparameters']['epochs']), epoch, best_loss, optimizer, criterion, device,
-                      data_loader, writer, Path.cwd().joinpath('results'), True, config)
+    Trainer = Trainer(model, args.epochs, epoch, best_loss, optimizer, criterion, device,
+                      data_loader, writer, Path.cwd().joinpath('results'), True, args)
 
     try:
-        if config['model']['status'] == 'train':
+        if args.status == 'train':
             Trainer.train()
         Trainer.test()
     except KeyboardInterrupt:
@@ -76,11 +99,11 @@ if __name__ == '__main__':
             'optimizer': optimizer.state_dict(),
             'best_loss': best_loss
         }
-        filename = f"{config['model']['name']}_{config['data']['name']}" \
-            f"_{config['model']['loss_fuction']}" \
-            f"_epochs{config['hyperparameters']['epochs']}" \
-            f"_batch{config['hyperparameters']['batch_size']}" \
-            f"_lr{config['hyperparameters']['learning_rate']}"
+        filename = f"{args.model}_{args.dataset}" \
+            f"_{args.loss_function}" \
+            f"_epochs{args.epochs}" \
+            f"_batch{args.batch_size}" \
+            f"_lr{args.lr}"
         checkpoint_path = Path.cwd().joinpath(
             'results').joinpath(f"{filename}.pth")
         torch.save(state_dict, checkpoint_path)

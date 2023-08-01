@@ -1,6 +1,5 @@
 import matplotlib.pyplot as plt
 import numpy as np
-import time
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -16,7 +15,7 @@ EPSILON = np.finfo(float).eps
 
 class Trainer:
     def __init__(self, model, epochs, epoch, best_loss, optimizer, criterion, device, 
-                 loader, writer, output_path, save_results, config):
+                 loader, writer, output_path, save_results, args):
         self.epoch = epoch  
         self.epochs = epochs
         self.best_loss = best_loss
@@ -28,15 +27,15 @@ class Trainer:
         self.writer = writer
 
         self.output_path = output_path
-        filename = f"{config['model']['name']}_{config['data']['name']}" \
-            f"_{config['model']['loss_fuction']}" \
-            f"_epochs{config['hyperparameters']['epochs']}" \
-            f"_batch{config['hyperparameters']['batch_size']}" \
-            f"_lr{config['hyperparameters']['learning_rate']}"
+        filename = f"{args.model}_{args.dataset}" \
+            f"_{args.loss_function}" \
+            f"_epochs{args.epochs}" \
+            f"_batch{args.batch_size}" \
+            f"_lr{args.lr}"
         self.model_path = output_path.joinpath(f"{filename}.pth")
         self.results_path = output_path.joinpath(f"{filename}.csv")
         self.save_results = save_results
-        self.config = config
+        self.args = args
 
         self.train_loss = 0        
         self.val_loss = 0
@@ -112,11 +111,11 @@ class Trainer:
             self._train_epoch()
             self._val_epoch()
             
-            plot_name = f"{self.config['model']['name']}_{self.config['data']['name']}" \
-                        f"_{self.config['model']['loss_fuction']}" \
-                        f"_epochs{self.config['hyperparameters']['epochs']}" \
-                        f"_batch{self.config['hyperparameters']['batch_size']}" \
-                        f"_lr{self.config['hyperparameters']['learning_rate']}"
+            plot_name = f"{self.args.model}_{self.args.dataset}" \
+                        f"_{self.args.loss_function}" \
+                        f"_epochs{self.args.epochs}" \
+                        f"_batch{self.args.batch_size}" \
+                        f"_lr{self.args.lr}"
 
             self.writer.add_scalars(plot_name, {'train': self.train_loss},self.epoch)
             self.writer.add_scalars(plot_name, {'val': self.val_loss},self.epoch)
@@ -153,12 +152,12 @@ class Trainer:
         specificity = tn / (tn + fp)
         bal_acc = (sensitivity + specificity) / 2
 
-        sns.heatmap(cm, annot=True, fmt='d', cmap='Blues')
-        plt.title(f'Bal. Acc: {bal_acc:.4f}')
-        if self.output_path.joinpath('images', 'confusion_matrix.png').exists():
-            plt.savefig(self.output_path.joinpath('images', f"{self.config['model']['name']}_{self.config['data']['name']}_confusion_matrix_{int(time.localtime())}.png"))
+        sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', cbar=False)
+        plt.title(f'{self.args.dataset} Bal. Acc: {bal_acc:.4f}')
+        if self.output_path.joinpath('images', f"{self.args.model}_{self.args.dataset}_confusion_matrix.png").exists():
+            number_of_files = len(list(self.output_path.joinpath('images').glob(f"{self.args.model}_{self.args.dataset}_confusion_matrix_*.png")))
+            plt.savefig(self.output_path.joinpath('images', f"{self.args.model}_{self.args.dataset}_confusion_matrix_{number_of_files}.png"))
         else:
-            plt.savefig(self.output_path.joinpath('images', f"{self.config['model']['name']}_{self.config['data']['name']}_confusion_matrix.png"))
-        plt.show()
+            plt.savefig(self.output_path.joinpath('images', f"{self.args.model}_{self.args.dataset}_confusion_matrix.png"))
         plt.close()
     
