@@ -22,6 +22,7 @@ class LSTM_01(nn.Module):
 # main
 # for debug and watch model structure
 if __name__ == '__main__':
-       
+    from torchinfo import summary
+    
     model = LSTM_01()
-    print(model)
+    summary(model, (8, 1, 260, 3))

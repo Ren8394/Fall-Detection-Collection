@@ -1,4 +1,4 @@
-import configparser, argparse
+import argparse
 import os
 import pandas as pd
 import random
@@ -34,7 +34,7 @@ def get_args():
     parser.add_argument('--status', type=str, default='train')
     # hyperparameters
     parser.add_argument('--epochs', type=int, default=100)
-    parser.add_argument('--batch_size', type=int, default=8)  
+    parser.add_argument('--batch_size', type=int, default=8)
     parser.add_argument('--lr', type=float, default=0.001)
     # etc
     parser.add_argument('--gpu', type=str, default='0')
@@ -42,6 +42,7 @@ def get_args():
 
     args = parser.parse_args()
     return args
+
 
 # main
 if __name__ == '__main__':
@@ -57,8 +58,7 @@ if __name__ == '__main__':
     print('* learning rate =', args.lr)
 
     # data path
-    exec(
-        f"from Preprocessing import preprocessing_{args.dataset} as preprocess")
+    exec(f"from Preprocessing import preprocessing_{args.dataset} as preprocess")
     preprocess(
         loadfile_path=Path.cwd().joinpath('datasets', 'processed',
                                           f"{args.dataset}-Preliminary.pkl"),
@@ -71,19 +71,16 @@ if __name__ == '__main__':
     )
 
     # load model
-    exec(
-        f"from models.{args.model} import {args.model}_{args.version} as model")
+    exec(f"from models.{args.model} import {args.model}_{args.version} as model")
     model = model()
-    model, epoch, best_loss, optimizer, criterion, device = load_model(
-        args, model)
+    model, epoch, best_loss, optimizer, criterion, device = load_model(args, model)
 
     # tensorboard
     writer = SummaryWriter(f"./logs/"
                            f"{args.model}_{args.dataset}_{args.loss_function}"
                            f"_epochs{args.epochs}_batch{args.batch_size}_lr{args.lr}")
 
-    data_loader = load_data(args, data_path=Path.cwd().joinpath(
-        'datasets', 'processed', f"{args.dataset}-Processed.pkl"))
+    data_loader = load_data(args, data_path=Path.cwd().joinpath('datasets', 'processed', f"{args.dataset}-Processed.pkl"))
 
     Trainer = Trainer(model, args.epochs, epoch, best_loss, optimizer, criterion, device,
                       data_loader, writer, Path.cwd().joinpath('results'), True, args)
@@ -99,13 +96,13 @@ if __name__ == '__main__':
             'optimizer': optimizer.state_dict(),
             'best_loss': best_loss
         }
-        filename = f"{args.model}_{args.dataset}" \
+        filename = \
+            f"{args.model}_{args.dataset}" \
             f"_{args.loss_function}" \
             f"_epochs{args.epochs}" \
             f"_batch{args.batch_size}" \
             f"_lr{args.lr}"
-        checkpoint_path = Path.cwd().joinpath(
-            'results').joinpath(f"{filename}.pth")
+        checkpoint_path = Path.cwd().joinpath('results').joinpath(f"{filename}.pth")
         torch.save(state_dict, checkpoint_path)
         print('Saved interrupt')
         try:

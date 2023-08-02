@@ -28,7 +28,7 @@ class CNN_01(nn.Module):
 # main
 # for debug and watch model structure
 if __name__ == '__main__':
-    from torchsummary import summary
+    from torchinfo import summary
     
     model = CNN_01()
-    summary(model, (1, 260, 3))
+    summary(model, (8, 1, 260, 3))

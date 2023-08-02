@@ -14,9 +14,9 @@ MAX = np.iinfo(np.int16).max
 EPSILON = np.finfo(float).eps
 
 class Trainer:
-    def __init__(self, model, epochs, epoch, best_loss, optimizer, criterion, device, 
+    def __init__(self, model, epochs, epoch, best_loss, optimizer, criterion, device,
                  loader, writer, output_path, save_results, args):
-        self.epoch = epoch  
+        self.epoch = epoch
         self.epochs = epochs
         self.best_loss = best_loss
         self.model = model.to(device)
@@ -27,23 +27,24 @@ class Trainer:
         self.writer = writer
 
         self.output_path = output_path
-        filename = f"{args.model}_{args.dataset}" \
+        self.filename = \
+            f"{args.model}_{args.dataset}" \
             f"_{args.loss_function}" \
             f"_epochs{args.epochs}" \
             f"_batch{args.batch_size}" \
             f"_lr{args.lr}"
-        self.model_path = output_path.joinpath(f"{filename}.pth")
-        self.results_path = output_path.joinpath(f"{filename}.csv")
+        self.output_model_path = output_path.joinpath(f"{self.filename }.pth")
+        self.results_path = output_path.joinpath(f"{self.filename }.csv")
         self.save_results = save_results
         self.args = args
 
-        self.train_loss = 0        
+        self.train_loss = 0
         self.val_loss = 0
-         
-    def _train_step(self, x, y):  
-        
+
+    def _train_step(self, x, y):
+
         device = self.device
-        
+
         x = x.to(device)
         y = y.to(device)
 
@@ -56,41 +57,41 @@ class Trainer:
         self.optimizer.step()
 
     def _train_epoch(self):
-        
+
         self.train_loss = 0
 
         self.model.train()
-         
+
         for x, y in self.loader['train']:
             self._train_step(x, y)
-            
+
         self.train_loss /= len(self.loader['train'])
 
         print(f'Epoch {self.epoch + 1:03d}/{self.epochs} | Train Loss: {self.train_loss:.4f}')
 
     def _val_step(self, x, y):
-        
+
         device = self.device
-        
+
         x = x.to(device)
         y = y.to(device)
-        
+
         pred = self.model(x)
         loss = self.criterion(pred, y)
-        
+
         self.val_loss += loss.item()
 
     def _val_epoch(self):
         pass
         self.val_loss = 0
-     
+
         self.model.eval()
 
         for x, y in self.loader['val']:
             self._val_step(x, y)
 
         self.val_loss /= len(self.loader['val'])
-       
+
         if self.best_loss > self.val_loss:
             self.save_checkpoint()
             self.best_loss = self.val_loss
@@ -102,34 +103,28 @@ class Trainer:
             'model': self.model.state_dict(),
             'optimizer': self.optimizer.state_dict(),
             'best_loss': self.best_loss
-            }
-        torch.save(state_dict, self.model_path)
+        }
+        torch.save(state_dict, self.output_model_path)
 
     def train(self):
-        
+
         while self.epoch < self.epochs:
             self._train_epoch()
             self._val_epoch()
-            
-            plot_name = f"{self.args.model}_{self.args.dataset}" \
-                        f"_{self.args.loss_function}" \
-                        f"_epochs{self.args.epochs}" \
-                        f"_batch{self.args.batch_size}" \
-                        f"_lr{self.args.lr}"
 
-            self.writer.add_scalars(plot_name, {'train': self.train_loss},self.epoch)
-            self.writer.add_scalars(plot_name, {'val': self.val_loss},self.epoch)
-                                
+            self.writer.add_scalars(self.filename, {'train': self.train_loss}, self.epoch)
+            self.writer.add_scalars(self.filename, {'val': self.val_loss}, self.epoch)
+
             self.epoch += 1
 
     def test(self):
-        
+
         # load model
         self.model.eval()
-        checkpoint = torch.load(self.model_path)
+        checkpoint = torch.load(self.output_model_path)
         self.model.load_state_dict(checkpoint['model'])
 
-        device = self.device    
+        device = self.device
         self.model.to(device)
 
         # Confusion matrix
@@ -143,21 +138,18 @@ class Trainer:
 
                 y_pred.append(F.softmax(self.model(x), dim=1).argmax(dim=1).cpu().numpy())
                 y_true.append(y.argmax(dim=1).cpu().numpy())
-        
+
         y_true = np.concatenate(y_true)
         y_pred = np.concatenate(y_pred)
         cm = confusion_matrix(y_true, y_pred)
         tn, fp, fn, tp = cm.ravel()
-        sensitivity = tp / (tp + fn)
-        specificity = tn / (tn + fp)
-        bal_acc = (sensitivity + specificity) / 2
+        f1 = 2 * tp / (2 * tp + fp + fn)
 
         sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', cbar=False)
-        plt.title(f'{self.args.dataset} Bal. Acc: {bal_acc:.4f}')
-        if self.output_path.joinpath('images', f"{self.args.model}_{self.args.dataset}_confusion_matrix.png").exists():
-            number_of_files = len(list(self.output_path.joinpath('images').glob(f"{self.args.model}_{self.args.dataset}_confusion_matrix_*.png")))
-            plt.savefig(self.output_path.joinpath('images', f"{self.args.model}_{self.args.dataset}_confusion_matrix_{number_of_files}.png"))
+        plt.title(f'{self.args.dataset} F1: {f1:.4f}')
+        if self.output_path.joinpath('images', f"{self.filename}_cm.png").exists():
+            number_of_files = len(list(self.output_path.joinpath('images').glob(f"{self.filename}_cm_*.png")))
+            plt.savefig(self.output_path.joinpath('images', f"{self.filename}_cm_{number_of_files}.png"))
         else:
-            plt.savefig(self.output_path.joinpath('images', f"{self.args.model}_{self.args.dataset}_confusion_matrix.png"))
+            plt.savefig(self.output_path.joinpath('images', f"{self.filename}_cm.png"))
         plt.close()
-    

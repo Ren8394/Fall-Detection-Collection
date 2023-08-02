@@ -4,17 +4,19 @@ import torch
 import torch.nn as nn
 
 from sklearn.model_selection import train_test_split
-from torch.optim import Adam,SGD
+from torch.optim import Adam, SGD
 from torch.utils.data import Dataset, DataLoader
+
 
 def weights_init(m):
     if isinstance(m, nn.Conv2d) or isinstance(m, nn.Linear):
         for name, param in m.named_parameters():
-            if param.requires_grad==True:
+            if param.requires_grad == True:
                 if 'bias' in name:
                     nn.init.constant_(param, 0.0)
                 elif 'weight' in name:
                     nn.init.xavier_normal_(param)
+
 
 def load_model(args, model):
 
@@ -23,15 +25,15 @@ def load_model(args, model):
 
     # loss fuction
     criterions = {
-        'ce'      : nn.CrossEntropyLoss(),
-        'mse'     : nn.MSELoss(),
+        'ce': nn.CrossEntropyLoss(),
+        'mse': nn.MSELoss(),
     }
     criterion = criterions[args.loss_function]
 
     # optimizer
     optimizers = {
-        'adam'    : Adam(model.parameters(), lr=args.lr, weight_decay=0),
-        'sgd'     : SGD(model.parameters(),lr=args.lr, weight_decay=0)
+        'adam': Adam(model.parameters(), lr=args.lr, weight_decay=0),
+        'sgd': SGD(model.parameters(), lr=args.lr, weight_decay=0)
     }
     optimizer = optimizers[args.optimizer]
 
@@ -41,6 +43,7 @@ def load_model(args, model):
     model.apply(weights_init)
 
     return model, epoch, best_loss, optimizer, criterion, device
+
 
 def load_data(args, data_path):
     # read data and split train/val
@@ -56,15 +59,17 @@ def load_data(args, data_path):
     val_dataset = CustomDataset(val_df)
     test_dataset = CustomDataset(test_df)
 
-    data_loader = { 
-        'train':DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, num_workers=4, pin_memory=False),
-        'val'  :DataLoader(val_dataset, batch_size=args.batch_size, num_workers=4, pin_memory=False),
-        'test' :DataLoader(test_dataset, batch_size=args.batch_size, num_workers=4, pin_memory=False)
+    data_loader = {
+        'train': DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, num_workers=4, pin_memory=False),
+        'val': DataLoader(val_dataset, batch_size=args.batch_size, num_workers=4, pin_memory=False),
+        'test': DataLoader(test_dataset, batch_size=args.batch_size, num_workers=4, pin_memory=False)
     }
 
     return data_loader
 
 ##############################################################################################################
+
+
 class CustomDataset(Dataset):
 
     def __init__(self, df):
@@ -72,7 +77,7 @@ class CustomDataset(Dataset):
 
     def __len__(self):
         return len(self.df)
-    
+
     def __getitem__(self, idx):
         # check what sensors are used
         if 'Acc' in self.df.columns.tolist() and 'Gyr' in self.df.columns.tolist():
@@ -96,17 +101,17 @@ class CustomDataset(Dataset):
         else:
             raise ValueError('sensor must be Acc or Gyr')
 
-
         label = self.df.loc[idx, 'Activity']
         y = torch.tensor(label, dtype=torch.float32)
-        
+
         return x, y
-    
+
     def _ensure_type(self, data):
         # ensure acc is a numpy array with a supported data type (e.g., float32)
         if isinstance(data, np.ndarray):
             if data.dtype.type is np.object_:
-                data = data.astype(np.float32)  # change to a supported data type
+                # change to a supported data type
+                data = data.astype(np.float32)
         elif isinstance(data, list):
             data = np.array(data, dtype=np.float32)
 

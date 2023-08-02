@@ -46,8 +46,7 @@ def preprocessing_FallAllD(loadfile_path, savefile_path, sensor, location, sampl
     df['Acc'] = df['Acc'].apply(lambda x: resampling(x, 238, sampling_rate, duration))
 
     # one-hot encoding
-    df['Activity'] = df['Activity'].apply(
-        lambda x: [1, 0] if x == 'Fall' else [0, 1])
+    df['Activity'] = df['Activity'].apply(lambda x: [1, 0] if x == 'Fall' else [0, 1])
 
     # reset index
     df = df.reset_index(drop=True, inplace=False)
@@ -82,8 +81,7 @@ def preprocessing_UMAFall(loadfile_path, savefile_path, sensor, location, sampli
     df['Acc'] = df['Acc'].apply(lambda x: resampling(x, 20, sampling_rate, duration))
 
     # one-hot encoding
-    df['Activity'] = df['Activity'].apply(
-        lambda x: [1, 0] if x == 'Fall' else [0, 1])
+    df['Activity'] = df['Activity'].apply(lambda x: [1, 0] if x == 'Fall' else [0, 1])
 
     # reset index
     df = df.reset_index(drop=True, inplace=False)
@@ -118,8 +116,7 @@ def preprocessing_SisFall(loadfile_path, savefile_path, sensor, location, sampli
     df['Acc'] = df['Acc'].apply(lambda x: resampling(x, 200, sampling_rate, duration))
 
     # one-hot encoding
-    df['Activity'] = df['Activity'].apply(
-        lambda x: [1, 0] if x == 'Fall' else [0, 1])
+    df['Activity'] = df['Activity'].apply(lambda x: [1, 0] if x == 'Fall' else [0, 1])
 
     # reset index
     df = df.reset_index(drop=True, inplace=False)
