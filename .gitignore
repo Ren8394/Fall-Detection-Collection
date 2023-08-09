@@ -4,6 +4,8 @@ datasets/raw/
 .vscode/
 logs/
 results/*.pth
+results/images/*.png
+run.sh
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
