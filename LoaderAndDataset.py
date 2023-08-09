@@ -22,6 +22,9 @@ def load_model(args, model):
 
     # check and select device
     device = torch.device(f"cuda:{args.gpu}" if torch.cuda.is_available() else 'cpu')
+    # Mac MX chip
+    # device = torch.device(f"mps" if torch.cuda.is_available() else 'cpu')
+
 
     # loss fuction
     criterions = {
