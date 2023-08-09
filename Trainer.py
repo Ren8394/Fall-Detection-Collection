@@ -145,8 +145,20 @@ class Trainer:
         tn, fp, fn, tp = cm.ravel()
         f1 = 2 * tp / (2 * tp + fp + fn)
 
-        sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', cbar=False)
-        plt.title(f'{self.args.dataset} F1: {f1:.4f}')
+        sns.heatmap(
+            cm, 
+            annot=True, 
+            fmt='d', 
+            xticklabels=['Fall', 'ADL'], 
+            yticklabels=['Fall', 'ADL'], 
+            cmap='coolwarm', 
+            linecolor='white',
+            linewidths=1,
+            cbar=False
+        )
+        plt.ylabel('Actual Labels')
+        plt.xlabel('Predicted Labels')
+        plt.title(f'{self.args.model}_{self.args.dataset} F1: {f1:.4f}')
         if self.output_path.joinpath('images', f"{self.filename}_cm.png").exists():
             number_of_files = len(list(self.output_path.joinpath('images').glob(f"{self.filename}_cm_*.png")))
             plt.savefig(self.output_path.joinpath('images', f"{self.filename}_cm_{number_of_files}.png"))
