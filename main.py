@@ -76,9 +76,14 @@ if __name__ == '__main__':
     model, epoch, best_loss, optimizer, criterion, device = load_model(args, model)
 
     # tensorboard
-    writer = SummaryWriter(f"./logs/"
-                           f"{args.model}_{args.dataset}_{args.loss_function}"
-                           f"_epochs{args.epochs}_batch{args.batch_size}_lr{args.lr}")
+    writer = SummaryWriter(
+        f"./logs/"
+        f"{args.model}_{args.dataset}_{''.join(args.location)}"
+        f"_{args.loss_function}"
+        f"_epochs{args.epochs}"
+        f"_batch{args.batch_size}"
+        f"_lr{args.lr}"
+    )
 
     data_loader = load_data(args, data_path=Path.cwd().joinpath('datasets', 'processed', f"{args.dataset}-Processed.pkl"))
 
@@ -97,7 +102,7 @@ if __name__ == '__main__':
             'best_loss': best_loss
         }
         filename = \
-            f"{args.model}_{args.dataset}" \
+            f"{args.model}_{args.dataset}_{''.join(args.location)}" \
             f"_{args.loss_function}" \
             f"_epochs{args.epochs}" \
             f"_batch{args.batch_size}" \

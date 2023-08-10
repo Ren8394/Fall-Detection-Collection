@@ -28,7 +28,7 @@ class Trainer:
 
         self.output_path = output_path
         self.filename = \
-            f"{args.model}_{args.dataset}" \
+            f"{args.model}_{args.dataset}_{''.join(args.location)}" \
             f"_{args.loss_function}" \
             f"_epochs{args.epochs}" \
             f"_batch{args.batch_size}" \
@@ -161,7 +161,7 @@ class Trainer:
         plt.title(f'{self.args.model}_{self.args.dataset} F1: {f1:.4f}')
         if self.output_path.joinpath('images', f"{self.filename}_cm.png").exists():
             number_of_files = len(list(self.output_path.joinpath('images').glob(f"{self.filename}_cm_*.png")))
-            plt.savefig(self.output_path.joinpath('images', f"{self.filename}_cm_{number_of_files}.png"))
+            plt.savefig(self.output_path.joinpath('images', f"{self.filename}_cm_{number_of_files+1}.png"))
         else:
             plt.savefig(self.output_path.joinpath('images', f"{self.filename}_cm.png"))
         plt.close()
