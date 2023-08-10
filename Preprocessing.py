@@ -68,18 +68,18 @@ def preprocessing_UMAFall(loadfile_path, savefile_path, sensor, location, sampli
         raise ValueError('sensor must be Acc or Gyr, but got {}'.format(sensor))
 
     # drop unused rows
-    if location == ['Waist', 'Wrist', 'Right Pocket', 'Ankle']:
+    if location == ['Waist', 'Wrist', 'RightPocket', 'Ankle']:
         pass
     elif location == ['Waist']:
         df = df[df['Device'] == 'Waist']
     elif location == ['Wrist']:
         df = df[df['Device'] == 'Wrist']
-    elif location == ['Right Pocket']:
-        df = df[df['Device'] == 'Right Pocket']
+    elif location == ['RightPocket']:
+        df = df[df['Device'] == 'RightPocket']
     elif location == ['Ankle']:
         df = df[df['Device'] == 'Ankle']
     else:
-        raise ValueError('location must be Waist, Wrist, Right Pocket, and Ankle, but got {}'.format(location))
+        raise ValueError('location must be Waist, Wrist, RightPocket, and Ankle, but got {}'.format(location))
 
     # resampling (Original sampling rate = 20Hz)
     df['Acc'] = df['Acc'].apply(lambda x: resampling(x, 20, sampling_rate, duration))
