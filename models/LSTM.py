@@ -3,11 +3,11 @@ import torch.nn.functional as F
 
 # LSTM_01 structure refer to FallAllD paper
 class LSTM_01(nn.Module):
-    def __init__(self):
+    def __init__(self, input_length, output_size):
         super(LSTM_01, self).__init__()
         self.lstmBlock1 = nn.LSTM(input_size=3, hidden_size=32, num_layers=1, batch_first=True)
         self.lstmBlock2 = nn.LSTM(input_size=32, hidden_size=64, num_layers=1, batch_first=True)
-        self.fc1 = nn.Linear(64, 2)
+        self.fc1 = nn.Linear(64, output_size)
 
     def forward(self, x):
         

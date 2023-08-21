@@ -3,7 +3,7 @@ import torch.nn.functional as F
 
 # CNN_01 structure refer to FallAllD paper
 class CNNLSTM_01(nn.Module):
-    def __init__(self):
+    def __init__(self, input_length, output_size):
         super(CNNLSTM_01, self).__init__()
         self.convBlock1 = nn.Sequential(
             nn.Conv2d(1, 8, kernel_size=(3, 3), stride=1, padding=0, bias=False),
@@ -16,7 +16,7 @@ class CNNLSTM_01(nn.Module):
         )
         self.lstmBlock1 = nn.LSTM(input_size=16, hidden_size=32, num_layers=1, batch_first=True)
         self.lstmBlock2 = nn.LSTM(input_size=32, hidden_size=64, num_layers=1, batch_first=True)
-        self.fc1 = nn.Linear(64, 2)
+        self.fc1 = nn.Linear(64, output_size)
         
 
     def forward(self, x):
