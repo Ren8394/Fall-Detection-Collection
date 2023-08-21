@@ -19,12 +19,10 @@ def weights_init(m):
 
 
 def load_model(args, model):
-
     # check and select device
     device = torch.device(f"cuda:{args.gpu}" if torch.cuda.is_available() else 'cpu')
     # Mac MX chip
     # device = torch.device(f"mps" if torch.cuda.is_available() else 'cpu')
-
 
     # loss fuction
     criterions = {
@@ -82,27 +80,10 @@ class CustomDataset(Dataset):
         return len(self.df)
 
     def __getitem__(self, idx):
-        # check what sensors are used
-        if 'Acc' in self.df.columns.tolist() and 'Gyr' in self.df.columns.tolist():
-            acc = self.df.loc[idx, 'Acc']
-            gyr = self.df.loc[idx, 'Gyr']
-            acc = torch.tensor(self._ensure_type(acc), dtype=torch.float32)
-            gyr = torch.tensor(self._ensure_type(gyr), dtype=torch.float32)
-            acc = acc.unsqueeze(0)
-            gyr = gyr.unsqueeze(0)
-            x = torch.cat((acc, gyr), dim=2)
-        elif 'Acc' in self.df.columns.tolist():
-            acc = self.df.loc[idx, 'Acc']
-            acc = torch.tensor(self._ensure_type(acc), dtype=torch.float32)
-            acc = acc.unsqueeze(0)
-            x = acc
-        elif 'Gyr' in self.df.columns.tolist():
-            gyr = self.df.loc[idx, 'Gyr']
-            gyr = torch.tensor(self._ensure_type(gyr), dtype=torch.float32)
-            gyr = gyr.unsqueeze(0)
-            x = gyr
-        else:
-            raise ValueError('sensor must be Acc or Gyr')
+        acc = self.df.loc[idx, 'Acc']
+        acc = torch.tensor(self._ensure_type(acc), dtype=torch.float32)
+        acc = acc.unsqueeze(0)
+        x = acc
 
         label = self.df.loc[idx, 'Activity']
         y = torch.tensor(label, dtype=torch.float32)

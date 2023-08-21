@@ -9,6 +9,7 @@ import torch.backends.cudnn as cudnn
 from torch.utils.tensorboard import SummaryWriter
 from pathlib import Path
 
+from Preprocessing import preprocessing
 from LoaderAndDataset import load_model, load_data
 from Trainer import Trainer
 
@@ -21,11 +22,12 @@ cudnn.deterministic = True
 def get_args():
     parser = argparse.ArgumentParser()
     # data
-    parser.add_argument('--dataset', type=str, default='SisFall')
-    parser.add_argument('--sensor', type=str, nargs='+', default=['Acc'])
+    parser.add_argument('--dataset', type=str, default='FallAllD')
+    # preprocessing
     parser.add_argument('--location', type=str, nargs='+', default=['Waist'])
-    parser.add_argument('--duration', type=int, default=13)
-    parser.add_argument('--sampling_rate', type=int, default=20)
+    parser.add_argument('--sampling_rate', type=int, default=20)                # sampling rate in Hz
+    parser.add_argument('--duration', type=int, default=10)                     # window size in seconds
+    parser.add_argument('--overlap', type=float, default=0.5)                   # overlap ratio
     # model
     parser.add_argument('--model', type=str, default='LSTM')
     parser.add_argument('--version', type=str, default='01')
@@ -43,7 +45,6 @@ def get_args():
     args = parser.parse_args()
     return args
 
-
 # main
 if __name__ == '__main__':
     # get current path
@@ -58,21 +59,17 @@ if __name__ == '__main__':
     print('* learning rate =', args.lr)
 
     # data path
-    exec(f"from Preprocessing import preprocessing_{args.dataset} as preprocess")
-    preprocess(
-        loadfile_path=Path.cwd().joinpath('datasets', 'processed',
-                                          f"{args.dataset}-Preliminary.pkl"),
-        savefile_path=Path.cwd().joinpath('datasets', 'processed',
-                                          f"{args.dataset}-Processed.pkl"),
-        sensor=args.sensor,
-        location=args.location,
+    preprocessing(
+        dataset=args.dataset,
+        device_location=args.location,
         sampling_rate=args.sampling_rate,
-        duration=args.duration
+        duration=args.duration,
+        overlap=args.overlap
     )
 
     # load model
     exec(f"from models.{args.model} import {args.model}_{args.version} as model")
-    model = model()
+    model = model(input_length=int(args.sampling_rate * args.duration), output_size=2)
     model, epoch, best_loss, optimizer, criterion, device = load_model(args, model)
 
     # tensorboard

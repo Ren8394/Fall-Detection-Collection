@@ -2,122 +2,104 @@ import numpy as np
 import pandas as pd
 
 from pathlib import Path
-from sklearn.utils import resample
 
-def resampling(x, original_sampling_rate, target_sampling_rate, target_duration):
-    
-    original_duration = len(x) / original_sampling_rate
-    
-    step = int(original_sampling_rate / target_sampling_rate)
-    x = x[::-step, :]
-    
-    if original_duration > target_duration:
-        x = x[-(target_duration * target_sampling_rate):, :]
-    else:
-        x = np.concatenate((x, np.zeros((target_sampling_rate * target_duration - len(x), 3))), axis=0)
+dataset_sampling_rate = {
+    'FallAllD': {
+        'Waist': 238,
+        'Wrist': 238,
+        'Neck': 238,
+    },
+    'UMAFall': {
+        'Waist': 20,
+        'Wrist': 20,
+        'Ankle': 20,
+        'Chest': 20,
+        'RightPocket': 200,
+    },
+    'SisFall': {
+        'Waist': 200,
+    }
+}
+
+def sliding_window(x, window_size, overlap):
+    # Step size
+    step = int(window_size * overlap)
+    # Number of windows                            
+    n = int((len(x) - window_size) / step + 1)
+    x = np.array([x[i * step:i * step + window_size] for i in range(n)])
     return x
 
-def preprocessing_FallAllD(loadfile_path, savefile_path, sensor, location, sampling_rate, duration):
-    # read data
-    # columns = ['SubjectID', 'Device', 'Activity', 'Acc', 'Gyr']
+def resampling(x, original_sampling_rate, target_sampling_rate, target_duration):
+    # Down-sampling
+    if original_sampling_rate > target_sampling_rate: 
+        step = int(np.floor(original_sampling_rate / target_sampling_rate))
+        x = x[::-step, :]
+    # Up-sampling
+    elif original_sampling_rate < target_sampling_rate: 
+        step = int(np.ceil(target_sampling_rate / original_sampling_rate))
+        x = np.repeat(x, step, axis=0)
+    
+    # Padding
+    if len(x) > int(target_duration * target_sampling_rate):
+        x = x[-int(target_duration * target_sampling_rate):, :]
+    elif len(x) < int(target_duration * target_sampling_rate):
+        x = np.concatenate((x, np.zeros((int(target_duration * target_sampling_rate) - len(x), 3))), axis=0)
+    return x
+
+def preprocessing(dataset, device_location, sampling_rate, duration, overlap):
+    # Check dataset
+    if not dataset in list(dataset_sampling_rate.keys()):
+        raise ValueError(f"dataset must be {list(dataset_sampling_rate.keys())}, but got {dataset}")
+    
+    # Path for loading data and saving data
+    loadfile_path = Path.cwd().joinpath('datasets', 'processed', f"{dataset}-Preliminary.pkl")
+    savefile_path = Path.cwd().joinpath('datasets', 'processed', f"{dataset}-Processed.pkl")
+
+    # Preprocessing
+    # Read data
+    # Columns = ['SubjectID', 'Device', 'Activity', 'Acc']
     df = pd.read_pickle(loadfile_path)
 
-    # drop unused columns
-    if sensor == ['Acc', 'Gyr']:
-        pass
-    elif sensor == ['Acc']:
-        df = df.drop(columns=['Gyr'])
-    elif sensor == ['Gyr']:
-        df = df.drop(columns=['Acc'])
+    # Sliding window (Only ADL data)
+    list_subjectID = []
+    list_Device = []
+    list_Activity = []
+    list_Acc = []
+    for _, row in df.iterrows():
+        if row['Activity'] == 'Fall':
+            list_subjectID.append(row['SubjectID'])
+            list_Device.append(row['Device'])
+            list_Activity.append(row['Activity'])
+            list_Acc.append(resampling(row['Acc'], dataset_sampling_rate[dataset][row['Device']], sampling_rate, duration))
+        else:
+            for win in sliding_window(row['Acc'], dataset_sampling_rate[dataset][row['Device']] * duration, overlap):
+                list_subjectID.append(row['SubjectID'])
+                list_Device.append(row['Device'])
+                list_Activity.append(row['Activity'])
+                list_Acc.append(resampling(win, dataset_sampling_rate[dataset][row['Device']], sampling_rate, duration))
+
+    del df
+    df = pd.DataFrame({'SubjectID': list_subjectID, 'Device': list_Device, 'Activity': list_Activity, 'Acc': list_Acc})
+
+    # Drop unused rows
+    if all(x in list(dataset_sampling_rate[dataset].keys()) for x in device_location):
+        df = df[df['Device'].isin(device_location)]
     else:
-        raise ValueError('sensor must be Acc or Gyr, but got {}'.format(sensor))
-
-    # drop unused rows
-    if location == ['Waist', 'Wrist']:
-        pass
-    elif location == ['Waist']:
-        df = df[df['Device'] == 'Waist']
-    elif location == ['Wrist']:
-        df = df[df['Device'] == 'Wrist']
-    else:
-        raise ValueError('location must be Waist or Wrist, but got {}'.format(location))
-
-    # resampling (Original sampling rate = 238Hz)
-    df['Acc'] = df['Acc'].apply(lambda x: resampling(x, 238, sampling_rate, duration))
-
-    # one-hot encoding
+        raise ValueError(f'device_location must be {list(dataset_sampling_rate[dataset].keys())}, but got {device_location}')
+    
+    # One-hot encoding
     df['Activity'] = df['Activity'].apply(lambda x: [1, 0] if x == 'Fall' else [0, 1])
-
-    # reset index
+    
+    # Reset index
     df = df.reset_index(drop=True, inplace=False)
     df.to_pickle(savefile_path)
 
-def preprocessing_UMAFall(loadfile_path, savefile_path, sensor, location, sampling_rate, duration):
-    # read data
-    # columns = ['SubjectID', 'Device', 'Activity', 'Acc', 'Gyr']
-    df = pd.read_pickle(loadfile_path)
-
-    # drop unused columns
-    if sensor == ['Acc', 'Gyr']:
-        pass
-    elif sensor == ['Acc']:
-        df = df.drop(columns=['Gyr'])
-    elif sensor == ['Gyr']:
-        df = df.drop(columns=['Acc'])
-    else:
-        raise ValueError('sensor must be Acc or Gyr, but got {}'.format(sensor))
-
-    # drop unused rows
-    if location == ['Waist', 'Wrist', 'RightPocket', 'Ankle']:
-        pass
-    elif location == ['Waist']:
-        df = df[df['Device'] == 'Waist']
-    elif location == ['Wrist']:
-        df = df[df['Device'] == 'Wrist']
-    elif location == ['RightPocket']:
-        df = df[df['Device'] == 'RightPocket']
-    elif location == ['Ankle']:
-        df = df[df['Device'] == 'Ankle']
-    else:
-        raise ValueError('location must be Waist, Wrist, RightPocket, and Ankle, but got {}'.format(location))
-
-    # resampling (Original sampling rate = 20Hz)
-    df['Acc'] = df['Acc'].apply(lambda x: resampling(x, 20, sampling_rate, duration))
-
-    # one-hot encoding
-    df['Activity'] = df['Activity'].apply(lambda x: [1, 0] if x == 'Fall' else [0, 1])
-
-    # reset index
-    df = df.reset_index(drop=True, inplace=False)
-    df.to_pickle(savefile_path)
-
-def preprocessing_SisFall(loadfile_path, savefile_path, sensor, location, sampling_rate, duration):
-    # read data
-    # columns = ['SubjectID', 'Device', 'Activity', 'Acc', 'Gyr']
-    df = pd.read_pickle(loadfile_path)
-
-    # drop unused columns
-    if sensor == ['Acc', 'Gyr']:
-        pass
-    elif sensor == ['Acc']:
-        df = df.drop(columns=['Gyr'])
-    elif sensor == ['Gyr']:
-        df = df.drop(columns=['Acc'])
-    else:
-        raise ValueError('sensor must be Acc or Gyr, but got {}'.format(sensor))
-
-    # drop unused rows
-    if location == ['Waist']:
-        df = df[df['Device'] == 'Waist']
-    else:
-        raise ValueError('location must be Waist, but got {}'.format(location))
-
-    # resampling (Original sampling rate = 200Hz)
-    df['Acc'] = df['Acc'].apply(lambda x: resampling(x, 200, sampling_rate, duration))
-
-    # one-hot encoding
-    df['Activity'] = df['Activity'].apply(lambda x: [1, 0] if x == 'Fall' else [0, 1])
-
-    # reset index
-    df = df.reset_index(drop=True, inplace=False)
-    df.to_pickle(savefile_path)
+if __name__ == '__main__':
+    
+    preprocessing(
+        dataset='FallAllD',
+        device_location=['Waist'],
+        sampling_rate=20,
+        duration=10,
+        overlap=0.5
+    )
