@@ -5,6 +5,7 @@
 Example code
 
 ## Processed Dataset
+
 Put the data in the **datasets/preocessed** folder. If the folder does not exist, create it.
 
 1. Download processed *FallAllD* Dataset [here](https://drive.google.com/file/d/1CiI2I5gG9KZyP3TeUxjof-B0H7EpFGWW/view?usp=drive_link)
