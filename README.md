@@ -4,6 +4,13 @@
 
 Example code
 
+## Processed Dataset
+Put the data in the **datasets/preocessed** folder. If the folder does not exist, create it.
+
+1. Download processed *FallAllD* Dataset [here](https://drive.google.com/file/d/1CiI2I5gG9KZyP3TeUxjof-B0H7EpFGWW/view?usp=drive_link)
+2. Download processed *UMAFall* Dataset [here](https://drive.google.com/file/d/1CtJFAguhqhY6IiSdTyWoe6mh3E93LyT_/view?usp=drive_link)
+3. Download processed *SisFall* Dataset [here](https://drive.google.com/file/d/1i07WWEWRdZc7WL40QQpf3OzbYLRxpgTm/view?usp=drive_link)
+
 ## ToDo
 
 ## References
