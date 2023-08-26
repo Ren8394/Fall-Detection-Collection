@@ -49,11 +49,15 @@ def load_model(args, model):
 def load_data(args, data_path):
     # read data and split train/val
     data_df = pd.read_pickle(data_path)
-    train_df, val_df = train_test_split(data_df, test_size=0.2)
-    val_df, test_df = train_test_split(val_df, test_size=0.5)
+    train_df, val_df = train_test_split(data_df, test_size=0.2, random_state=4444)
+    val_df, test_df = train_test_split(val_df, test_size=0.5, random_state=4444)
     train_df.reset_index(drop=True, inplace=True)
     val_df.reset_index(drop=True, inplace=True)
     test_df.reset_index(drop=True, inplace=True)
+
+    save_test = True
+    if save_test:
+        test_df.to_pickle(data_path.parent.parent.joinpath('tmp', 'test_df.pkl'))
 
     # create dataset
     train_dataset = CustomDataset(train_df)
@@ -62,8 +66,8 @@ def load_data(args, data_path):
 
     data_loader = {
         'train': DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, num_workers=4, pin_memory=False),
-        'val': DataLoader(val_dataset, batch_size=args.batch_size, num_workers=4, pin_memory=False),
-        'test': DataLoader(test_dataset, batch_size=args.batch_size, num_workers=4, pin_memory=False)
+        'val': DataLoader(val_dataset, batch_size=args.batch_size, shuffle=False ,num_workers=4, pin_memory=False),
+        'test': DataLoader(test_dataset, batch_size=args.batch_size, shuffle=False, num_workers=4, pin_memory=False)
     }
 
     return data_loader
@@ -100,3 +104,5 @@ class CustomDataset(Dataset):
             data = np.array(data, dtype=np.float32)
 
         return data
+
+##############################################################################################################
