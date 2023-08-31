@@ -82,7 +82,7 @@ if __name__ == '__main__':
         f"_lr{args.lr}"
     )
 
-    data_loader = load_data(args, data_path=Path.cwd().joinpath('datasets', 'processed', f"{args.dataset}-Processed.pkl"))
+    data_loader = load_data(args, data_path=Path.cwd().joinpath('dataset', 'processed', f"{args.dataset}-Processed.pkl"))
 
     Trainer = Trainer(model, args.epochs, epoch, best_loss, optimizer, criterion, device,
                       data_loader, writer, Path.cwd().joinpath('results'), True, args)

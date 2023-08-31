@@ -52,8 +52,8 @@ def preprocessing(dataset, device_location, sampling_rate, duration, overlap):
         raise ValueError(f"dataset must be {list(dataset_sampling_rate.keys())}, but got {dataset}")
     
     # Path for loading data and saving data
-    loadfile_path = Path.cwd().joinpath('datasets', 'processed', f"{dataset}-Preliminary.pkl")
-    savefile_path = Path.cwd().joinpath('datasets', 'processed', f"{dataset}-Processed.pkl")
+    loadfile_path = Path.cwd().joinpath('dataset', 'processed', f"{dataset}-Preliminary.pkl")
+    savefile_path = Path.cwd().joinpath('dataset', 'processed', f"{dataset}-Processed.pkl")
 
     # Preprocessing
     # Read data
