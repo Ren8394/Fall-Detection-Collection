@@ -1,6 +1,6 @@
 # Self-defined
-dataset/processed/
-dataset/raw/
+datasets/processed/
+datasets/raw/
 dataset/tmp/
 .vscode/
 logs/
