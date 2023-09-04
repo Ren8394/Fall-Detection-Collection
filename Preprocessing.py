@@ -29,7 +29,7 @@ def sliding_window(x, window_size, overlap):
     x = np.array([x[i * step:i * step + window_size] for i in range(n)])
     return x
 
-def resampling(x, original_sampling_rate, target_sampling_rate, target_duration):
+def resampling(x, original_sampling_rate, target_sampling_rate, target_duration, dataset='None'):
     # Down-sampling
     if original_sampling_rate > target_sampling_rate: 
         step = int(np.floor(original_sampling_rate / target_sampling_rate))
@@ -41,7 +41,16 @@ def resampling(x, original_sampling_rate, target_sampling_rate, target_duration)
     
     # Padding
     if len(x) > int(target_duration * target_sampling_rate):
-        x = x[-int(target_duration * target_sampling_rate):, :]
+        if dataset == 'FallAllD':
+            # Select middle samples
+            start = int(np.floor((len(x) - int(target_duration * target_sampling_rate)) / 2))
+            x = x[start:start + int(target_duration * target_sampling_rate), :]
+        elif dataset == 'UMAFall':
+            # Select First
+            x = x[:int(target_duration * target_sampling_rate), :]
+        else:
+            # Select Last
+            x = x[-int(target_duration * target_sampling_rate):, :]
     elif len(x) < int(target_duration * target_sampling_rate):
         x = np.concatenate((x, np.zeros((int(target_duration * target_sampling_rate) - len(x), 3))), axis=0)
     return x
@@ -52,8 +61,8 @@ def preprocessing(dataset, device_location, sampling_rate, duration, overlap):
         raise ValueError(f"dataset must be {list(dataset_sampling_rate.keys())}, but got {dataset}")
     
     # Path for loading data and saving data
-    loadfile_path = Path.cwd().joinpath('dataset', 'processed', f"{dataset}-Preliminary.pkl")
-    savefile_path = Path.cwd().joinpath('dataset', 'processed', f"{dataset}-Processed.pkl")
+    loadfile_path = Path.cwd().joinpath('datasets', 'processed', f"{dataset}-Preliminary.pkl")
+    savefile_path = Path.cwd().joinpath('datasets', 'processed', f"{dataset}-Processed.pkl")
 
     # Preprocessing
     # Read data
