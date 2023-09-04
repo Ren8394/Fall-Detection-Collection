@@ -1,7 +1,7 @@
 # Self-defined
 datasets/processed/
 datasets/raw/
-dataset/tmp/
+datasets/tmp/
 .vscode/
 logs/
 results/*.pth
