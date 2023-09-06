@@ -2,6 +2,7 @@
 datasets/processed/
 datasets/raw/
 datasets/tmp/
+dataset/*
 .vscode/
 logs/
 results/*.pth
