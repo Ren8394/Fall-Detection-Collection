@@ -3,6 +3,7 @@ datasets/processed/
 datasets/raw/
 datasets/tmp/
 dataset/*
+.tmp/*
 .vscode/
 logs/
 results/*.pth
