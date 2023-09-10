@@ -14,22 +14,32 @@ def resample(input_data: np.ndarray, ori_sr: int, target_sr: int) -> np.ndarray:
     elif ori_sr > target_sr:
         # Down-sampling
         ratio = int(np.floor(float(ori_sr / target_sr)))
-        x, y, z = input_data[0][::ratio], input_data[1][::ratio], input_data[2][::ratio]
-        return np.array([x, y, z])
+        x, y, z = input_data[::ratio, 0], input_data[::ratio, 1], input_data[::ratio, 2]
+        return np.array([x, y, z]).T
     else:
         # Up-sampling
         ratio = int(np.ceil(float(target_sr / ori_sr)))
         x, y, z = [], [], []
-        for n in range(input_data.shape[1]):
-            x.extend(np.linspace(start=input_data[0][n], stop=input_data[0][n+1], num=ratio))
-            y.extend(np.linspace(start=input_data[1][n], stop=input_data[1][n+1], num=ratio))
-            z.extend(np.linspace(start=input_data[2][n], stop=input_data[2][n+1], num=ratio))
-        return np.array([x, y, z])
+        for n in range(input_data.shape[0] - 1):
+            x.extend(np.linspace(start=input_data[n, 0], stop=input_data[n+1, 0], num=ratio))
+            y.extend(np.linspace(start=input_data[n, 1], stop=input_data[n+1, 1], num=ratio))
+            z.extend(np.linspace(start=input_data[n, 2], stop=input_data[n+1, 2], num=ratio))
+        return np.array([x, y, z]).T
 
 def sliding_window(input_data: np.ndarray, window_size: int, stride: int) -> np.ndarray:
     # Number of windows
     n = int((len(input_data) - window_size) / stride + 1)
-    return np.array([input_data[i * stride:i * stride + window_size] for i in range(n)])
+    return [input_data[(i * stride):(i * stride + window_size)] for i in range(n)]
+
+def ensure_type(data):
+    # ensure data is a numpy array with a supported data type (e.g., float32)
+    if isinstance(data, np.ndarray):
+        if data.dtype.type is np.object_:
+            # change to a supported data type
+            data = data.astype(np.float32)
+    elif isinstance(data, list):
+        data = np.array(data, dtype=np.float32)
+    return data
 
 def download_url():
     pass
