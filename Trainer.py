@@ -8,7 +8,7 @@ import seaborn as sns
 
 from tqdm import tqdm
 from pathlib import Path
-from sklearn.metrics import confusion_matrix
+from sklearn.metrics import confusion_matrix, f1_score
 
 MAX = np.iinfo(np.int16).max
 EPSILON = np.finfo(float).eps
@@ -148,7 +148,7 @@ class Trainer:
         y_pred = np.concatenate(y_pred)
         cm = confusion_matrix(y_true, y_pred)
         tn, fp, fn, tp = cm.ravel()
-        f1 = 2 * tp / (2 * tp + fp + fn)
+        f1 = f1_score(y_true, y_pred)
 
         sns.heatmap(
             cm, 
