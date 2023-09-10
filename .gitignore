@@ -1,11 +1,15 @@
 # Self-defined
 datasets/processed/
 datasets/raw/
+datasets/tmp/
 .vscode/
 logs/
 results/*.pth
 results/images/*.png
 run.sh
+.tmp/*
+test.ipynb
+.DS_Store
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
