@@ -104,7 +104,7 @@ class FallAllD(Dataset):
                         row["ActivityID"],
                         row["TrialNo"],
                         win,
-                        [0, 1]
+                        [1, 0]
                     ]
                 # add row index to be deleted
                 del_idx.append(i)
@@ -119,7 +119,7 @@ class FallAllD(Dataset):
                     row["ActivityID"],
                     row["TrialNo"],
                     row["Acc"][start_cutting:end_cutting],
-                    [1, 0]
+                    [0, 1]
                 ]
                 # add row index to be deleted
                 del_idx.append(i)

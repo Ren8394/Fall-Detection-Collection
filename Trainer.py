@@ -146,16 +146,16 @@ class Trainer:
 
         y_true = np.concatenate(y_true)
         y_pred = np.concatenate(y_pred)
-        cm = confusion_matrix(y_true, y_pred)
+        cm = confusion_matrix(y_true=y_true, y_pred=y_pred)
         tn, fp, fn, tp = cm.ravel()
-        f1 = f1_score(y_true, y_pred)
+        f1 = f1_score(y_true=y_true, y_pred=y_pred)
 
         sns.heatmap(
             cm, 
             annot=True, 
             fmt='d', 
-            xticklabels=['Fall', 'ADL'], 
-            yticklabels=['Fall', 'ADL'], 
+            xticklabels=['ADL', 'Fall'], 
+            yticklabels=['ADL', 'Fall'], 
             cmap='coolwarm', 
             linecolor='white',
             linewidths=1,
