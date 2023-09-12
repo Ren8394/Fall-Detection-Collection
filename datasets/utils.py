@@ -1,3 +1,4 @@
+import hashlib
 import numpy as np
 import pandas as pd
 
@@ -41,5 +42,12 @@ def ensure_type(data):
         data = np.array(data, dtype=np.float32)
     return data
 
-def download_url():
-    pass
+# check MD5 checksum
+def check_md5(check_filepath, ref_md5) -> bool:
+    md5 = hashlib.md5()
+    with check_filepath.open('rb') as f:
+        for chunk in iter(lambda: f.read(4096), b""):
+            md5.update(chunk)
+    calculated_md5 = md5.hexdigest()
+
+    return calculated_md5 == ref_md5
