@@ -13,10 +13,10 @@ class FallAllD(Dataset):
     
     base_folder = Path.cwd().joinpath(".tmp", "data")
     _RESOURCES = {
-        "raw": ("FallAllD.pkl", "202309091733"),
-        "train": ("FallAllD_train.pkl", "202309091733"),
-        "val": ("FallAllD_val.pkl", "202309091733"),
-        "test": ("FallAllD_test.pkl", "202309091733")
+        "raw": ("FallAllD.pkl", "..."),
+        "train": ("FallAllD_train.pkl", "..."),
+        "val": ("FallAllD_val.pkl", "..."),
+        "test": ("FallAllD_test.pkl", "...")
     }
 
     def __init__(
@@ -38,20 +38,24 @@ class FallAllD(Dataset):
         # window stride in points (window size * overlap ratio)
         self.window_stride = int(self.window_size * window[1])
 
+        self.base_folder.mkdir(parents=True, exist_ok=True)
         # check dataset exists
-        if not self._check_dataset_exists(self._RESOURCES["raw"][0]):
+        if not self.base_folder.joinpath(self._RESOURCES["raw"][0]).exists():
             raise RuntimeError(
                 "FallAllD Dataset not found. \nYou can download it from " +\
                 "https://ieee-dataport.org/open-access/fallalld-comprehensive-dataset-human-falls-and-activities-daily-living " +\
                 f"extract its and execute python file then move FallAllD.pkl to the {self.base_folder} folder "
             )
         
-        if not self._check_dataset_exists(self._RESOURCES["train"][0]) or \
-            not self._check_dataset_exists(self._RESOURCES["val"][0]) or \
-            not self._check_dataset_exists(self._RESOURCES["test"][0]):
+        # check processed dataset exists
+        if not (\
+            self.base_folder.joinpath(self._RESOURCES["train"][0]).exists() and \
+            self.base_folder.joinpath(self._RESOURCES["val"][0]).exists() and \
+            self.base_folder.joinpath(self._RESOURCES["test"][0]).exists()
+        ):
             self.preprocess()
 
-        # process dataset
+        # load processed dataset
         self.df = pd.read_pickle(self.base_folder.joinpath(self._RESOURCES[split][0]))
 
     def __len__(self) -> int:
@@ -60,35 +64,29 @@ class FallAllD(Dataset):
 
     def __getitem__(self, idx) -> Tuple[Any, Any]:
         
-        acc = self.df.loc[idx, 'Acc']
+        acc = self.df.loc[idx, "Acc"]
         acc = torch.tensor(ensure_type(acc), dtype=torch.float32)
         acc = acc.unsqueeze(0)
         x = acc
 
-        label = self.df.loc[idx, 'Fall/ADL']
+        label = self.df.loc[idx, "Fall/ADL"]
         y = torch.tensor(label, dtype=torch.float32)
 
         return x, y
-
-    def _check_dataset_exists(self, filename) -> bool:
-        
-        if not self.base_folder.exists():
-            self.base_folder.mkdir(parents=True, exist_ok=True)
-        else:
-            if not self.base_folder.joinpath(filename).exists():
-                return False
-        return True
 
     def preprocess(self) -> None:
         
         raw = pd.read_pickle(self.base_folder.joinpath(self._RESOURCES["raw"][0]))
         # drop row with NaN value
         raw = raw.dropna()
+        # add Activity, Fall/ADL column
+        raw["Activity"] = raw["ActivityID"]
         raw["Fall/ADL"] = np.nan
         # drop unused columns
-        # keep column SubjectID, Device, ActivityID, TrialNo, and Acc	
-        raw = raw.drop(columns=["Gyr", "Mag", "Bar"])
+        # keep column SubjectID, Device, Activity, TrialNo, Fall/ADL, and Acc
+        raw = raw.drop(columns=["ActivityID", "Gyr", "Mag", "Bar"])
         raw = raw.reset_index(drop=True)
+        raw = raw[["SubjectID", "Device", "Activity", "TrialNo", "Fall/ADL", "Acc"]]
 
         # resample
         raw["Acc"] = raw["Acc"].apply(lambda x: resample(x, 238, self.sr))
@@ -96,15 +94,15 @@ class FallAllD(Dataset):
         del_idx = []
         for i, row in raw.iterrows():
             # ADL
-            if row["ActivityID"] < 100:
+            if row["Activity"] < 100:
                 for win in sliding_window(row["Acc"], self.window_size, self.window_stride):
                     raw.loc[len(raw)] = [
                         row["SubjectID"], 
                         row["Device"], 
-                        row["ActivityID"],
+                        row["Activity"],
                         row["TrialNo"],
-                        win,
-                        [1, 0]
+                        [1, 0],
+                        win
                     ]
                 # add row index to be deleted
                 del_idx.append(i)
@@ -116,22 +114,22 @@ class FallAllD(Dataset):
                 raw.loc[len(raw)] = [
                     row["SubjectID"], 
                     row["Device"], 
-                    row["ActivityID"],
+                    row["Activity"],
                     row["TrialNo"],
-                    row["Acc"][start_cutting:end_cutting],
-                    [0, 1]
+                    [0, 1],
+                    row["Acc"][start_cutting:end_cutting]
                 ]
                 # add row index to be deleted
                 del_idx.append(i)
         # delete row
         raw = raw.drop(del_idx)
 
-        # select locations
+        # select device locations
         assert all(loc in list(raw["Device"].unique()) for loc in self.location), \
             f"device_location must be {list(raw['Device'].unique())}, but got {self.location}"
         raw = raw[raw["Device"].isin(self.location)]
-        # sort by SubjectID, Device, ActivityID, TrialNo
-        raw = raw.sort_values(by=["SubjectID", "Device", "ActivityID", "TrialNo"])
+        # sort by SubjectID, Device, Activity, TrialNo
+        raw = raw.sort_values(by=["SubjectID", "Device", "Activity", "TrialNo"])
         raw = raw.reset_index(drop=True)
 
         # split dataset
