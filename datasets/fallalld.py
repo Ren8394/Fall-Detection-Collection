@@ -47,12 +47,8 @@ class FallAllD(Dataset):
                 f"extract its and execute python file then move FallAllD.pkl to the {self.base_folder} folder "
             )
         
-        # check processed dataset exists
-        if not (\
-            self.base_folder.joinpath(self._RESOURCES["train"][0]).exists() and \
-            self.base_folder.joinpath(self._RESOURCES["val"][0]).exists() and \
-            self.base_folder.joinpath(self._RESOURCES["test"][0]).exists()
-        ):
+        # process dataset
+        if split == "train":
             self.preprocess()
 
         # load processed dataset
@@ -108,7 +104,11 @@ class FallAllD(Dataset):
                 del_idx.append(i)
             # Fall
             else:
-                # column Acc extrct only middle 10 seconds (10 * sr)
+                # padding
+                if len(row["Acc"]) < self.window_size:
+                    padding_length = self.window_size - len(row["Acc"])
+                    row["Acc"] = np.concatenate((np.zeros((np.ceil(padding_length/2), 3)), row["Acc"], np.zeros((np.ceil(padding_length/2), 3))), axis=0)
+                # column Acc extrct only middle window_size seconds (window_size * sr))
                 start_cutting = int(np.floor((len(row["Acc"]) - self.window_size) / 2))
                 end_cutting = int(start_cutting + self.window_size)
                 raw.loc[len(raw)] = [

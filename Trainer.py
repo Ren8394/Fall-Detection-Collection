@@ -60,7 +60,7 @@ class Trainer:
 
         self.train_loss = 0
 
-        progress = tqdm(total=len(self.loader['train']), desc=f'Epoch {self.epoch} / Epoch {self.epochs} | Train', unit='step')
+        progress = tqdm(total=len(self.loader['train']), desc=f'Epoch {self.epoch} / Epoch {self.epochs} | Train', unit='step', leave=False)
         self.model.train()
 
         for x, y in self.loader['train']:
@@ -68,8 +68,7 @@ class Trainer:
             progress.update(1)
 
         progress.close()
-        self.train_loss /= len(self.loader['train'])
-        print(f'train_loss:{self.train_loss}')      
+        self.train_loss /= len(self.loader['train'])    
 
     def _val_step(self, x, y):
 
@@ -87,7 +86,7 @@ class Trainer:
         
         self.val_loss = 0
 
-        progress = tqdm(total=len(self.loader['val']), desc=f'Epoch {self.epoch} / Epoch {self.epochs} | Valid', unit='step')
+        progress = tqdm(total=len(self.loader['val']), desc=f'Epoch {self.epoch} / Epoch {self.epochs} | Valid', unit='step', leave=False)
         self.model.eval()
 
         for x, y in self.loader['val']:
@@ -161,7 +160,6 @@ class Trainer:
             linewidths=1,
             cbar=False
         )
-        plt.tight_layout()
         plt.ylabel('Actual Labels')
         plt.xlabel('Predicted Labels')
         plt.title(f'{self.args.model}_{self.args.dataset} F1: {f1:.4f}')
