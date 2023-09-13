@@ -1,4 +1,5 @@
 import argparse
+import importlib
 import os
 import pandas as pd
 import random
@@ -9,7 +10,6 @@ import torch.backends.cudnn as cudnn
 from torch.utils.tensorboard import SummaryWriter
 from pathlib import Path
 
-from Preprocessing import preprocessing
 from LoaderAndDataset import load_model, load_data
 from Trainer import Trainer
 
@@ -24,12 +24,12 @@ def get_args():
     # data
     parser.add_argument('--dataset', type=str, default='FallAllD')
     # preprocessing
-    parser.add_argument('--location', type=str, nargs='+', default=['Waist'])
+    parser.add_argument('--location', type=str, nargs='+', default=['Wrist'])
     parser.add_argument('--sampling_rate', type=int, default=20)                # sampling rate in Hz
     parser.add_argument('--duration', type=int, default=10)                     # window size in seconds
     parser.add_argument('--overlap', type=float, default=0.5)                   # overlap ratio
     # model
-    parser.add_argument('--model', type=str, default='LSTM')
+    parser.add_argument('--model', type=str, default='CNN')
     parser.add_argument('--version', type=str, default='01')
     parser.add_argument('--loss_function', type=str, default='ce')
     parser.add_argument('--optimizer', type=str, default='adam')
@@ -58,18 +58,10 @@ if __name__ == '__main__':
     print('* status =', args.status)
     print('* learning rate =', args.lr)
 
-    # data path
-    preprocessing(
-        dataset=args.dataset,
-        device_location=args.location,
-        sampling_rate=args.sampling_rate,
-        duration=args.duration,
-        overlap=args.overlap
-    )
-
     # load model
-    exec(f"from models.{args.model} import {args.model}_{args.version} as model")
-    model = model(input_length=int(args.sampling_rate * args.duration), output_size=2)
+    module = importlib.import_module(f"models.{args.model}")
+    model_class = getattr(module, f"{args.model}_{args.version}")
+    model = model_class(input_length=int(args.sampling_rate * args.duration), output_size=2)
     model, epoch, best_loss, optimizer, criterion, device = load_model(args, model)
 
     # tensorboard

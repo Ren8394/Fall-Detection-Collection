@@ -1,3 +1,4 @@
+import importlib
 import numpy as np
 import pandas as pd
 import torch
@@ -20,9 +21,12 @@ def weights_init(m):
 
 def load_model(args, model):
     # check and select device
-    device = torch.device(f"cuda:{args.gpu}" if torch.cuda.is_available() else 'cpu')
-    # Mac MX chip
-    # device = torch.device(f"mps" if torch.cuda.is_available() else 'cpu')
+    if torch.cuda.is_available():
+        device = torch.device(f"cuda:{args.gpu}")
+    elif torch.backends.mps.is_available():
+        device = torch.device("mps")
+    else:
+        device = torch.device("cpu")
 
     # loss fuction
     criterions = {
@@ -47,56 +51,19 @@ def load_model(args, model):
 
 
 def load_data(args, data_path):
-    # read data and split train/val
-    data_df = pd.read_pickle(data_path)
-    train_df, val_df = train_test_split(data_df, test_size=0.2)
-    val_df, test_df = train_test_split(val_df, test_size=0.5)
-    train_df.reset_index(drop=True, inplace=True)
-    val_df.reset_index(drop=True, inplace=True)
-    test_df.reset_index(drop=True, inplace=True)
+    # import dataset
+    module = importlib.import_module("datasets")
+    CustomDataset = getattr(module, args.dataset)
 
-    # create dataset
-    train_dataset = CustomDataset(train_df)
-    val_dataset = CustomDataset(val_df)
-    test_dataset = CustomDataset(test_df)
+    # CustomDataset(split: str = "train",sr: int = 20,window: set = (10, 0.5), location: list = ["Wrist"],  download: bool = False)
+    train_dataset = CustomDataset(split='train', sr=args.sampling_rate, window=(args.duration, args.overlap), location=args.location, download=False)
+    val_dataset = CustomDataset(split='val', sr=args.sampling_rate, window=(args.duration, args.overlap), location=args.location, download=False)
+    test_dataset = CustomDataset(split='test', sr=args.sampling_rate, window=(args.duration, args.overlap), location=args.location, download=False)
 
     data_loader = {
         'train': DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, num_workers=4, pin_memory=False),
-        'val': DataLoader(val_dataset, batch_size=args.batch_size, num_workers=4, pin_memory=False),
-        'test': DataLoader(test_dataset, batch_size=args.batch_size, num_workers=4, pin_memory=False)
+        'val': DataLoader(val_dataset, batch_size=args.batch_size, shuffle=False ,num_workers=4, pin_memory=False),
+        'test': DataLoader(test_dataset, batch_size=args.batch_size, shuffle=False, num_workers=4, pin_memory=False)
     }
 
     return data_loader
-
-##############################################################################################################
-
-
-class CustomDataset(Dataset):
-
-    def __init__(self, df):
-        self.df = df
-
-    def __len__(self):
-        return len(self.df)
-
-    def __getitem__(self, idx):
-        acc = self.df.loc[idx, 'Acc']
-        acc = torch.tensor(self._ensure_type(acc), dtype=torch.float32)
-        acc = acc.unsqueeze(0)
-        x = acc
-
-        label = self.df.loc[idx, 'Activity']
-        y = torch.tensor(label, dtype=torch.float32)
-
-        return x, y
-
-    def _ensure_type(self, data):
-        # ensure acc is a numpy array with a supported data type (e.g., float32)
-        if isinstance(data, np.ndarray):
-            if data.dtype.type is np.object_:
-                # change to a supported data type
-                data = data.astype(np.float32)
-        elif isinstance(data, list):
-            data = np.array(data, dtype=np.float32)
-
-        return data

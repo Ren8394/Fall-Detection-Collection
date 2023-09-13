@@ -2,14 +2,16 @@
 datasets/processed/
 datasets/raw/
 datasets/tmp/
+dataset/*
+.tmp/*
 .vscode/
 logs/
 results/*.pth
 results/images/*.png
 run.sh
-.tmp/*
-test.ipynb
 .DS_Store
+._.DS_Store
+test.ipynb
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

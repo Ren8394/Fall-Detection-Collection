@@ -2,9 +2,13 @@
 
 ## Introduction
 
-Example code
+This repo implements some fall and ADL (Actvities of Daily Living) datasets preprocessing, fall detection models, and results visualization.
 
 ## ToDo
+
+- [] Add pretrain method (SSL)
+- [] Add Capture24
+- [] Add other visualization method for wrong prediction results
 
 ## References
 
@@ -31,20 +35,5 @@ UMAFall
     month = "6",
     url = "https://figshare.com/articles/dataset/UMA_ADL_FALL_Dataset_zip/4214283",
     doi = "10.6084/m9.figshare.4214283.v7"
-}
-```
-
-SisFall
-
-```bibtex
-@article{sucerquia2017sisfall,
-    title={SisFall: A fall and movement dataset},
-    author={Sucerquia, Angela and L{\'o}pez, Jos{\'e} David and Vargas-Bonilla, Jes{\'u}s Francisco},
-    journal={Sensors},
-    volume={17},
-    number={1},
-    pages={198},
-    year={2017},
-    publisher={MDPI}
 }
 ```
