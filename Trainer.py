@@ -161,6 +161,7 @@ class Trainer:
             linewidths=1,
             cbar=False
         )
+        plt.tight_layout()
         plt.ylabel('Actual Labels')
         plt.xlabel('Predicted Labels')
         plt.title(f'{self.args.model}_{self.args.dataset} F1: {f1:.4f}')
