@@ -56,13 +56,8 @@ class UMAFall(Dataset):
         if len(list(self.base_folder.joinpath("UMAFall_Dataset").glob("*.csv"))) != self._number_of_files:
             self._extract()
 
-        # check processed dataset exists
-        if not (\
-            self.base_folder.joinpath(self._RESOURCES["raw"][0]).exists() and \
-            self.base_folder.joinpath(self._RESOURCES["train"][0]).exists() and \
-            self.base_folder.joinpath(self._RESOURCES["val"][0]).exists() and \
-            self.base_folder.joinpath(self._RESOURCES["test"][0]).exists()
-        ):
+        # process dataset
+        if split == "train":
             self.preprocess()
 
         # load processed dataset
@@ -132,9 +127,6 @@ class UMAFall(Dataset):
             3: "Wrist",
             4: "Ankle"
         }
-        sensor_type = {
-            0: "Accelerometer"
-        }
 
         list_id, list_device, list_activity, list_trial, list_fall_adl, list_acc = [], [], [], [], [], []
         # merge all csv files into one pkl file, except for subject 13
@@ -171,8 +163,10 @@ class UMAFall(Dataset):
             pd.to_pickle(df_UMAFall, self.base_folder.joinpath(self._RESOURCES["raw"][0]))
 
     def preprocess(self) -> None:
-        # merge all csv files into one pkl file, except for subject 13
-        self._merge_csv_to_pkl()
+        # check merged csv file exists
+        if not self.base_folder.joinpath(self._RESOURCES["raw"][0]).exists():
+            # merge all csv files into one pkl file, except for subject 13
+            self._merge_csv_to_pkl()
         raw = pd.read_pickle(self.base_folder.joinpath(self._RESOURCES["raw"][0]))
         # drop row with NaN value
         raw = raw.dropna()
