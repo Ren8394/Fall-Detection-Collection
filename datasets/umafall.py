@@ -196,8 +196,12 @@ class UMAFall(Dataset):
                 del_idx.append(i)
             # Fall
             else:
-                # column Acc extrct only middle 10 seconds (10 * sr)
-                start_cutting = int(np.floor((len(row["Acc"]) - self.window_size) / 2))
+                # padding
+                if len(row["Acc"]) < self.window_size:
+                    padding_length = self.window_size - len(row["Acc"])
+                    row["Acc"] = np.concatenate((row["Acc"], np.zeros((padding_length, 3))), axis=0)
+                # column Acc extrct only first window_size seconds (window_size * sr))
+                start_cutting = int(0)
                 end_cutting = int(start_cutting + self.window_size)
                 raw.loc[len(raw)] = [
                     row["SubjectID"], 
