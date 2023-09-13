@@ -23,6 +23,8 @@ dependencies:
   - aws-checksums=0.1.11
   - aws-sdk-cpp=1.8.185
   - backcall=0.2.0
+  - backports=1.0
+  - backports.functools_lru_cache=1.6.5
   - blas=1.0
   - blinker=1.4
   - blosc=1.21.3
@@ -41,6 +43,7 @@ dependencies:
   - cffi=1.15.1
   - charset-normalizer=2.0.4
   - click=8.0.4
+  - colorama=0.4.6
   - comm=0.1.2
   - contourpy=1.0.5
   - cryptography=39.0.1
@@ -52,6 +55,7 @@ dependencies:
   - cuda-runtime=11.7.1
   - cxxfilt=0.3.0
   - cycler=0.11.0
+  - dataclasses=0.8
   - datasets=2.12.0
   - dbus=1.13.18
   - debugpy=1.5.1
@@ -125,6 +129,7 @@ dependencies:
   - libffi=3.4.4
   - libflac=1.3.4
   - libgcc-ng=11.2.0
+  - libgfortran=3.0.0
   - libgfortran-ng=11.2.0
   - libgfortran5=11.2.0
   - libgomp=11.2.0
@@ -186,6 +191,7 @@ dependencies:
   - numpy-base=1.24.3
   - nvidia-apex=0.1
   - oauthlib=3.2.2
+  - openblas=0.3.4
   - opencv=4.6.0
   - openh264=2.1.1
   - openjpeg=2.4.0
@@ -194,6 +200,7 @@ dependencies:
   - packaging=23.0
   - pandas=1.5.3
   - parso=0.8.3
+  - patsy=0.5.3
   - pcre=8.45
   - pexpect=4.8.0
   - pickleshare=0.7.5
@@ -205,6 +212,7 @@ dependencies:
   - ply=3.11
   - pooch=1.4.0
   - prompt-toolkit=3.0.36
+  - prompt_toolkit=3.0.36
   - protobuf=3.20.3
   - psutil=5.9.0
   - ptyprocess=0.7.0
@@ -231,7 +239,8 @@ dependencies:
   - pytorch=2.0.1
   - pytorch-cuda=11.7
   - pytorch-mutex=1.0
-  - pytz=2022.7
+  - pytz=2022.7.1
+  - pyu2f=0.1.5
   - pyyaml=6.0
   - pyzmq=25.1.0
   - qt-main=5.15.2
@@ -249,12 +258,14 @@ dependencies:
   - scikit-learn=1.2.2
   - scipy=1.10.1
   - seaborn=0.12.2
+  - seaborn-base=0.12.2
   - setuptools=67.8.0
   - sip=6.6.2
   - six=1.16.0
   - snappy=1.1.9
   - sqlite=3.41.2
   - stack_data=0.2.0
+  - statsmodels=0.13.2
   - sympy=1.11.1
   - tbb=2021.8.0
   - tensorboard=2.12.1
