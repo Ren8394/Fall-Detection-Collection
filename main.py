@@ -47,16 +47,14 @@ def get_args():
 
 # main
 if __name__ == '__main__':
-    # get current path
-    print('* current working directory =', Path.cwd())
-    print('* random seed =', SEED)
-
     # get parameter
     args = get_args()
 
-    print('* model name =', args.model)
-    print('* status =', args.status)
-    print('* learning rate =', args.lr)
+    print("* dataset =", args.dataset)
+    print("* model name =", args.model)
+    print("* status =", args.status)
+    print("* learning rate =", args.lr)
+    print("---------------------------------")
 
     # load model
     module = importlib.import_module(f"models.{args.model}")
