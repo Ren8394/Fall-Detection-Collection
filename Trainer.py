@@ -163,7 +163,8 @@ class Trainer:
 
         sns.heatmap(
             cm, 
-            annot=True, 
+            annot=True,
+            annot_kws={'fontsize':14, 'fontweight':'bold'},
             fmt='d', 
             xticklabels=['ADL', 'Fall'], 
             yticklabels=['ADL', 'Fall'], 
@@ -175,9 +176,9 @@ class Trainer:
         plt.ylabel('Actual Labels')
         plt.xlabel('Predicted Labels')
         plt.title(f'{self.args.model}_{self.args.dataset}\nF1: {f1:.4f} | Precision: {precision:.4f} | Recall: {recall:.4f} | Accuracy: {accuracy:.4f}')
-        if self.output_path.joinpath('images', f"{self.filename}_cm.png").exists():
+        if self.output_path.joinpath('images', f"{self.filename}_cm_0.png").exists():
             number_of_files = len(list(self.output_path.joinpath('images').glob(f"{self.filename}_cm_*.png")))
             plt.savefig(self.output_path.joinpath('images', f"{self.filename}_cm_{number_of_files+1}.png"))
         else:
-            plt.savefig(self.output_path.joinpath('images', f"{self.filename}_cm.png"))
+            plt.savefig(self.output_path.joinpath('images', f"{self.filename}_cm_0.png"))
         plt.close()
