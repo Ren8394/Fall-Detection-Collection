@@ -22,10 +22,10 @@ cudnn.deterministic = True
 def get_args():
     parser = argparse.ArgumentParser()
     # data
-    parser.add_argument('--dataset', type=str, default='FallAllD')
+    parser.add_argument('--dataset', type=str, default='UMAFall')
     # preprocessing
     parser.add_argument('--location', type=str, nargs='+', default=['Wrist'])
-    parser.add_argument('--sampling_rate', type=int, default=20)                # sampling rate in Hz
+    parser.add_argument('--sampling_rate', type=int, default=30)                # sampling rate in Hz
     parser.add_argument('--duration', type=int, default=10)                     # window size in seconds
     parser.add_argument('--overlap', type=float, default=0.5)                   # overlap ratio
     # model
