@@ -8,7 +8,7 @@ import seaborn as sns
 
 from tqdm import tqdm
 from pathlib import Path
-from sklearn.metrics import confusion_matrix, f1_score
+from sklearn.metrics import confusion_matrix, f1_score, precision_score, recall_score, accuracy_score
 
 MAX = np.iinfo(np.int16).max
 EPSILON = np.finfo(float).eps
@@ -157,6 +157,9 @@ class Trainer:
         cm = confusion_matrix(y_true=y_true, y_pred=y_pred)
         tn, fp, fn, tp = cm.ravel()
         f1 = f1_score(y_true=y_true, y_pred=y_pred)
+        precision = precision_score(y_true=y_true, y_pred=y_pred)
+        recall = recall_score(y_true=y_true, y_pred=y_pred)
+        accuracy = accuracy_score(y_true=y_true, y_pred=y_pred)
 
         sns.heatmap(
             cm, 
@@ -171,7 +174,7 @@ class Trainer:
         )
         plt.ylabel('Actual Labels')
         plt.xlabel('Predicted Labels')
-        plt.title(f'{self.args.model}_{self.args.dataset} F1: {f1:.4f}')
+        plt.title(f'{self.args.model}_{self.args.dataset}\nF1: {f1:.4f} | Precision: {precision:.4f} | Recall: {recall:.4f} | Accuracy: {accuracy:.4f}')
         if self.output_path.joinpath('images', f"{self.filename}_cm.png").exists():
             number_of_files = len(list(self.output_path.joinpath('images').glob(f"{self.filename}_cm_*.png")))
             plt.savefig(self.output_path.joinpath('images', f"{self.filename}_cm_{number_of_files+1}.png"))
