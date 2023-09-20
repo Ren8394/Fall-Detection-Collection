@@ -9,6 +9,7 @@ import torch.backends.cudnn as cudnn
 
 from torch.utils.tensorboard import SummaryWriter
 from pathlib import Path
+from datetime import date
 
 from LoaderAndDataset import load_model, load_data
 from Trainer import Trainer
@@ -65,11 +66,9 @@ if __name__ == '__main__':
     # tensorboard
     writer = SummaryWriter(
         f"./logs/"
-        f"{args.model}_{args.dataset}_{''.join(args.location)}"
-        f"_{args.loss_function}"
-        f"_epochs{args.epochs}"
-        f"_batch{args.batch_size}"
-        f"_lr{args.lr}"
+        f"{args.model}_{args.dataset}_{''.join(args.location)}/"
+        f"{date.today()}/"
+        f"epochs{args.epochs}_batch{args.batch_size}_lr{args.lr}_{args.loss_function}"
     )
 
     data_loader = load_data(args, data_path=Path.cwd().joinpath('datasets', 'processed', f"{args.dataset}-Processed.pkl"))
