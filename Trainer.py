@@ -126,6 +126,9 @@ class Trainer:
             self.writer.add_scalars(self.filename, {'val': self.val_loss}, self.epoch)
 
             self.epoch += 1
+        
+        if self.early_stopping_counter == self.early_stopping:
+            print(f'Early stopping at epoch {self.epoch}')
 
     def test(self):
 
