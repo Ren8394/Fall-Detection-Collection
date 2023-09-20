@@ -55,7 +55,6 @@ if __name__ == '__main__':
     print("* model name =", args.model)
     print("* status =", args.status)
     print("* learning rate =", args.lr)
-    print("---------------------------------")
 
     # load model
     module = importlib.import_module(f"models.{args.model}")

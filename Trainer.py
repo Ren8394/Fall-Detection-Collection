@@ -118,6 +118,7 @@ class Trainer:
 
     def train(self):
 
+        print("---------------------------------")
         while self.epoch < self.epochs and self.early_stopping_counter < self.early_stopping:
             self._train_epoch()
             self._val_epoch()
@@ -129,6 +130,7 @@ class Trainer:
         
         if self.early_stopping_counter == self.early_stopping:
             print(f'Early stopping at epoch {self.epoch}')
+        print("---------------------------------\n\n")
 
     def test(self):
 
@@ -156,11 +158,14 @@ class Trainer:
         y_pred = np.concatenate(y_pred)
         cm = confusion_matrix(y_true=y_true, y_pred=y_pred)
         tn, fp, fn, tp = cm.ravel()
+
+        # Caluculate F1 score, precision, recall, accuracy
         f1 = f1_score(y_true=y_true, y_pred=y_pred)
         precision = precision_score(y_true=y_true, y_pred=y_pred)
         recall = recall_score(y_true=y_true, y_pred=y_pred)
         accuracy = accuracy_score(y_true=y_true, y_pred=y_pred)
 
+        # Print confusion matrix
         sns.heatmap(
             cm, 
             annot=True,
@@ -173,9 +178,14 @@ class Trainer:
             linewidths=1,
             cbar=False
         )
-        plt.ylabel('Actual Labels')
-        plt.xlabel('Predicted Labels')
-        plt.title(f'{self.args.model}_{self.args.dataset}\nF1: {f1:.4f} | Precision: {precision:.4f} | Recall: {recall:.4f} | Accuracy: {accuracy:.4f}')
+        plt.ylabel('Actual Labels', fontsize=12)
+        plt.xlabel('Predicted Labels', fontsize=12)
+        plt.xticks(fontsize=14)
+        plt.yticks(fontsize=14)
+        plt.title(r"$\bf{"+ self.args.model + "\_" + self.args.dataset + "}$" + "\n"+ f"F1: {f1:.4f} | Precision: {precision:.4f} | Recall: {recall:.4f} | Accuracy: {accuracy:.4f}")
+
+        # Save results
+        self.output_path.joinpath('images').mkdir(parents=True, exist_ok=True)
         if self.output_path.joinpath('images', f"{self.filename}_cm_0.png").exists():
             number_of_files = len(list(self.output_path.joinpath('images').glob(f"{self.filename}_cm_*.png")))
             plt.savefig(self.output_path.joinpath('images', f"{self.filename}_cm_{number_of_files+1}.png"))
