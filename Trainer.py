@@ -41,6 +41,9 @@ class Trainer:
         self.train_loss = 0
         self.val_loss = 0
 
+        self.early_stopping = epochs // 10
+        self.early_stopping_counter = 0
+
     def _train_step(self, x, y):
 
         device = self.device
@@ -99,6 +102,9 @@ class Trainer:
         if self.best_loss > self.val_loss:
             self.save_checkpoint()
             self.best_loss = self.val_loss
+            self.early_stopping_counter = 0
+        else:
+            self.early_stopping_counter += 1
 
     def save_checkpoint(self):
 
@@ -112,7 +118,7 @@ class Trainer:
 
     def train(self):
 
-        while self.epoch < self.epochs:
+        while self.epoch < self.epochs and self.early_stopping_counter < self.early_stopping:
             self._train_epoch()
             self._val_epoch()
 
